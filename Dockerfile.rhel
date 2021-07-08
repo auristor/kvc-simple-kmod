@@ -7,19 +7,8 @@ RUN yum update -y
 
 # Expecting kmod software version as an input to the build
 ARG KMODVER
-# Grab the software from upstream
-ADD https://github.com/kmods-via-containers/simple-kmod/archive/${KMODVER}.tar.gz ./file.tar.gz
-RUN tar -x --strip-components=1 -f ./file.tar.gz
-
 # Expecting kernel version as an input to the build
 ARG KVER
 
-# Note, your host must have access to repos where kernel developement
-# packages can be installed. If it doesn't the following steps will
-# fail
-
-# Prep and build the module
-RUN yum install -y make sudo
-RUN make buildprep KVER=${KVER} KMODVER=${KMODVER}
-RUN make all       KVER=${KVER} KMODVER=${KMODVER}
-RUN make install   KVER=${KVER} KMODVER=${KMODVER}
+# Grab the kmod from upstream and extract it
+RUN export ARCH=`uname -m` && export KERN=`echo KVER |sed s/-/_/g|sed s/.$ARCH//` && export RPMVERS=`dnf -c auristor.repo list kmod-yfs-KMODVER --showduplicates |grep $KERN |awk '{print $2}'|sort -r|head -1` && dnf -c auristor.repo download kmod-yfs-${RPMVERS} && rpm2cpio kmod-yfs-${RPMVERS}.${ARCH}.rpm |(cd / && cpio -id \*.ko) && rm kmod-yfs-${RPMVERS}.${ARCH}.rpm
