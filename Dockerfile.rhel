@@ -2,13 +2,21 @@ FROM registry.access.redhat.com/ubi8:latest
 MAINTAINER "coreos@lists.fedoraproject.org"
 WORKDIR /build/
 
-# First update the base container to latest versions of everything
-RUN yum update -y
+# pull in the repo config
+ADD auristor.repo /build/
 
 # Expecting kmod software version as an input to the build
 ARG KMODVER
 # Expecting kernel version as an input to the build
 ARG KVER
 
+# Set dnf vars
+RUN echo $KMODVER > /etc/dnf/vars/auristorver
+
+# First update the base container to latest versions of everything
+RUN dnf update -y
+# Put cpio and modinfo in the base container
+RUN dnf install -y cpio kmod
+
 # Grab the kmod from upstream and extract it
-RUN export ARCH=`uname -m` && export KERN=`echo KVER |sed s/-/_/g|sed s/.$ARCH//` && export RPMVERS=`dnf -c auristor.repo list kmod-yfs-KMODVER --showduplicates |grep $KERN |awk '{print $2}'|sort -r|head -1` && dnf -c auristor.repo download kmod-yfs-${RPMVERS} && rpm2cpio kmod-yfs-${RPMVERS}.${ARCH}.rpm |(cd / && cpio -id \*.ko) && rm kmod-yfs-${RPMVERS}.${ARCH}.rpm
+RUN export ARCH=`uname -m` && export KERN=`echo $KVER |sed s/-/_/g|sed s/.$ARCH//` && export RPMVERS=`dnf -c auristor.repo list kmod-yfs --showduplicates |grep $KERN |awk '{print $2}'|sort -r|head -1` && dnf -c auristor.repo download kmod-yfs-${RPMVERS} && rpm2cpio kmod-yfs-${RPMVERS}.${ARCH}.rpm |(cd / && cpio -id \*.ko) && rm kmod-yfs-${RPMVERS}.${ARCH}.rpm

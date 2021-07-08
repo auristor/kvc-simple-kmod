@@ -1,4 +1,4 @@
 [auristor]
 name=AuriStorFS Client RPM Repository for $releasever - $basearch
-baseurl=https://client-rpm-repo.auristor.com/filesystem/repo/v2021.05/$releasever/$basearch/
+baseurl=https://client-rpm-repo.auristor.com/filesystem/repo/$auristorver/$releasever/$basearch/
 enabled=1
