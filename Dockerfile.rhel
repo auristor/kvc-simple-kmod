@@ -19,4 +19,4 @@ RUN dnf update -y
 RUN dnf install -y cpio kmod
 
 # Grab the kmod from upstream and extract it
-RUN export ARCH=`uname -m` && export KERN=`echo $KVER |sed s/-/_/g|sed s/.$ARCH//` && export RPMVERS=`dnf -c auristor.repo list kmod-yfs --showduplicates |grep $KERN |awk '{print $2}'|sort -r|head -1` && dnf -c auristor.repo download kmod-yfs-${RPMVERS} && rpm2cpio kmod-yfs-${RPMVERS}.${ARCH}.rpm |(cd / && cpio -id \*.ko) && rm kmod-yfs-${RPMVERS}.${ARCH}.rpm
+RUN export ARCH=`uname -m` && export KERN=`echo $KVER |sed s/-/_/g|sed s/.$ARCH//` && export RPMVERS=`dnf -c auristor.repo list kmod-yfs --showduplicates |grep $KERN |awk '{print $2}'|sort -r|head -1` && dnf -c auristor.repo download kmod-yfs-${RPMVERS} && rpm2cpio kmod-yfs-${RPMVERS}.${ARCH}.rpm |(cd / && cpio -id \*.ko) && rm kmod-yfs-${RPMVERS}.${ARCH}.rpm && depmod -a
